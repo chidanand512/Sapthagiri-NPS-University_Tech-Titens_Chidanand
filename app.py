@@ -604,12 +604,14 @@ def access_resources():
         conn.close()
         return redirect(url_for('login'))
     
+    # Get sort parameter from request
+    sort = request.args.get('sort', 'latest')
+    
     # Get all resources with uploader info
     cursor.execute('''
         SELECT r.*, u.name as uploader_name, u.college as uploader_college, u.branch as uploader_branch
         FROM resources r
         JOIN users u ON r.user_id = u.id
-        ORDER BY r.upload_date DESC
     ''')
     all_resources = cursor.fetchall()
     conn.close()
@@ -631,6 +633,28 @@ def access_resources():
         resource_dict['review_count'] = rating_info['review_count']
         
         accessible_resources.append(resource_dict)
+    
+    # Sorting
+    if sort == "latest":
+        accessible_resources.sort(key=lambda x: x['upload_date'], reverse=True)
+    elif sort == "oldest":
+        accessible_resources.sort(key=lambda x: x['upload_date'], reverse=False)
+    elif sort == "rating-high":
+        accessible_resources.sort(key=lambda x: x['avg_rating'], reverse=True)
+    elif sort == "rating-low":
+        accessible_resources.sort(key=lambda x: x['avg_rating'], reverse=False)
+    elif sort == "most-reviewed":
+        accessible_resources.sort(key=lambda x: x['review_count'], reverse=True)
+    elif sort == "title-asc":
+        accessible_resources.sort(key=lambda x: x['title'])
+    elif sort == "title-desc":
+        accessible_resources.sort(key=lambda x: x['title'], reverse=True)
+    elif sort == "subject-asc":
+        accessible_resources.sort(key=lambda x: x['subject'])
+    elif sort == "subject-desc":
+        accessible_resources.sort(key=lambda x: x['subject'], reverse=True)
+    else:
+        accessible_resources.sort(key=lambda x: x['upload_date'], reverse=True)
     
     user_data = {
         'name': user['name'],
