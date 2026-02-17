@@ -1,4 +1,4 @@
-Campus Academic Resource Sharing Platform.
+# Campus Academic Resource Sharing Platform.
 
 # 🎓 Campus Resource Hub  
 ### Neural Breach – Yugastr 2026 Hackathon Project  
