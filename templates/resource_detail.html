@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ resource.title }} - Resource Details</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; min-height: 100vh; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background: #667eea; padding: 30px 0; box-shadow: 2px 0 5px rgba(0,0,0,0.1); display: flex; flex-direction: column; z-index: 100; }
+        .nav-brand { color: white; font-size: 24px; font-weight: bold; padding: 0 20px; margin-bottom: 40px; }
+        .nav-menu { list-style: none; display: flex; flex-direction: column; gap: 5px; flex: 1; }
+        .nav-menu li a { color: white; text-decoration: none; padding: 15px 20px; display: block; transition: background 0.3s; }
+        .nav-menu li a:hover, .nav-menu li a.active { background: rgba(255,255,255,0.2); }
+        .logout-item { margin-top: auto; }
+        .logout-link { background: rgba(255,255,255,0.1); }
+        .logout-link:hover { background: rgba(255,255,255,0.2); }
+        .main-content { margin-left: 250px; padding: 30px; }
+        .back-link { display: inline-block; color: #667eea; text-decoration: none; margin-bottom: 20px; font-weight: 500; }
+        .back-link:hover { text-decoration: underline; }
+        .content-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        h1 { color: #333; margin-bottom: 20px; }
+        .alert { padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .resource-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 30px; }
+        .resource-title-section h1 { margin-bottom: 10px; }
+        .privacy-badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 15px; }
+        .badge-public { background: #28a745; color: white; }
+        .badge-private { background: #dc3545; color: white; }
+        .rating-summary { background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; display: flex; align-items: center; gap: 30px; }
+        .rating-large { text-align: center; }
+        .rating-number { font-size: 48px; font-weight: bold; color: #667eea; }
+        .stars-large { color: #ffc107; font-size: 32px; letter-spacing: 3px; }
+        .rating-count { color: #666; margin-top: 5px; }
+        .resource-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .info-item { background: #f8f9fa; padding: 15px; border-radius: 8px; }
+        .info-item strong { color: #667eea; display: block; margin-bottom: 5px; }
+        .description-section { margin-bottom: 30px; }
+        .description-section h3 { color: #667eea; margin-bottom: 15px; }
+        .tags-display { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+        .tag { background: #667eea; color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; }
+        .action-buttons { display: flex; gap: 15px; margin-top: 30px; }
+        .btn { padding: 12px 30px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.3s; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        .reviews-section { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .reviews-section h2 { color: #333; margin-bottom: 25px; }
+        .review-form { background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; }
+        .review-form h3 { color: #667eea; margin-bottom: 20px; }
+        .star-rating { display: flex; gap: 10px; margin-bottom: 20px; }
+        .star-input { font-size: 32px; cursor: pointer; color: #ddd; transition: color 0.2s; }
+        .star-input:hover, .star-input.active { color: #ffc107; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #555; font-weight: 500; }
+        .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: Arial, sans-serif; resize: vertical; min-height: 120px; }
+        .form-group textarea:focus { outline: none; border-color: #667eea; }
+        .form-actions { display: flex; gap: 10px; }
+        .review-item { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #667eea; }
+        .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .reviewer-info { display: flex; align-items: center; gap: 10px; }
+        .reviewer-name { font-weight: 600; color: #333; }
+        .review-date { color: #999; font-size: 13px; }
+        .review-stars { color: #ffc107; font-size: 18px; }
+        .review-text { color: #555; line-height: 1.6; margin-top: 10px; }
+        .review-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-small { padding: 6px 14px; font-size: 13px; }
+        .empty-reviews { text-align: center; padding: 40px; color: #999; }
+        .lock-message { background: #fff3cd; border: 2px solid #ffc107; color: #856404; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        @media (max-width: 768px) { .sidebar { width: 200px; } .main-content { margin-left: 200px; padding: 15px; } .resource-info { grid-template-columns: 1fr; } .rating-summary { flex-direction: column; text-align: center; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="nav-brand">Student Portal</div>
+        <ul class="nav-menu">
+            <li><a href="/dashboard">🏠 Home</a></li>
+            <li><a href="/upload_page">📤 Upload Resource</a></li>
+            <li><a href="/access_resources" class="active">🔐 Access Resources</a></li>
+            <li><a href="/dashboard#uploaded">📁 My Resources</a></li>
+            <li><a href="/dashboard#history">📥 Download History</a></li>
+            <li><a href="/dashboard#profile">👤 My Profile</a></li>
+            <li class="logout-item"><a href="/logout" class="logout-link">🚪 Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <a href="/access_resources" class="back-link">← Back to Resources</a>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="content-box">
+            {% if not resource.accessible %}
+            <div class="lock-message">
+                <strong>⚠️ Access Restricted</strong>
+                <p>This resource is private and only available to students from {{ resource.uploader_college }}. You cannot download or review this resource.</p>
+            </div>
+            {% endif %}
+
+            <div class="resource-header">
+                <div class="resource-title-section">
+                    <span class="privacy-badge {% if resource.privacy == 'Public' %}badge-public{% else %}badge-private{% endif %}">
+                        {% if resource.privacy == 'Public' %}🔓 Public{% else %}🔒 Private{% endif %}
+                    </span>
+                    <h1>{{ resource.title }}</h1>
+                </div>
+            </div>
+
+            <div class="rating-summary">
+                <div class="rating-large">
+                    <div class="rating-number">{{ resource.avg_rating }}</div>
+                    <div class="stars-large">{{ '★' * resource.avg_rating|int }}{{ '☆' * (5 - resource.avg_rating|int) }}</div>
+                    <div class="rating-count">{{ resource.review_count }} review{{ 's' if resource.review_count != 1 else '' }}</div>
+                </div>
+                <div style="flex: 1;">
+                    <p style="color: #666; line-height: 1.6;">
+                        {% if resource.review_count > 0 %}
+                            This resource has been reviewed by {{ resource.review_count }} user{{ 's' if resource.review_count != 1 else '' }} 
+                            with an average rating of {{ resource.avg_rating }} out of 5 stars.
+                        {% else %}
+                            This resource hasn't been reviewed yet. Be the first to share your feedback!
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="resource-info">
+                <div class="info-item">
+                    <strong>Subject/Course</strong>
+                    {{ resource.subject }}
+                </div>
+                <div class="info-item">
+                    <strong>Resource Type</strong>
+                    {{ resource.resource_type }}
+                </div>
+                <div class="info-item">
+                    <strong>Semester</strong>
+                    {{ resource.semester }}
+                </div>
+                <div class="info-item">
+                    <strong>Branch/Department</strong>
+                    {{ resource.uploader_branch }}
+                </div>
+                <div class="info-item">
+                    <strong>Year/Batch</strong>
+                    {{ resource.year_batch }}
+                </div>
+                <div class="info-item">
+                    <strong>Uploaded By</strong>
+                    {{ resource.uploader_name }} ({{ resource.uploader_college }})
+                </div>
+                <div class="info-item">
+                    <strong>Upload Date</strong>
+                    {{ resource.upload_date }}
+                </div>
+                <div class="info-item">
+                    <strong>File Size</strong>
+                    {{ (resource.file_size / 1024 / 1024)|round(2) }} MB
+                </div>
+            </div>
+
+            {% if resource.description %}
+            <div class="description-section">
+                <h3>Description</h3>
+                <p>{{ resource.description }}</p>
+            </div>
+            {% endif %}
+
+            {% if resource.tags %}
+            <div class="description-section">
+                <h3>Tags</h3>
+                <div class="tags-display">
+                    {% for tag in resource.tags.split(',') %}
+                    <span class="tag">{{ tag.strip() }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if resource.accessible %}
+            <div class="action-buttons">
+                <a href="/download/{{ resource.id }}" class="btn btn-success">📥 Download Resource</a>
+                <a href="/access_resources" class="btn btn-secondary">← Back to Browse</a>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if resource.accessible %}
+        <div class="reviews-section">
+            <h2>Reviews & Ratings</h2>
+
+            <div class="review-form">
+                <h3>{% if user_review %}Edit Your Review{% else %}Write a Review{% endif %}</h3>
+                <form method="POST" action="/submit_review/{{ resource.id }}">
+                    <div class="form-group">
+                        <label>Your Rating *</label>
+                        <div class="star-rating" id="starRating">
+                            <span class="star-input" data-rating="1">★</span>
+                            <span class="star-input" data-rating="2">★</span>
+                            <span class="star-input" data-rating="3">★</span>
+                            <span class="star-input" data-rating="4">★</span>
+                            <span class="star-input" data-rating="5">★</span>
+                        </div>
+                        <input type="hidden" name="rating" id="ratingValue" value="{{ user_review.rating if user_review else '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Your Review (Optional)</label>
+                        <textarea name="review_text" placeholder="Share your thoughts about this resource...">{{ user_review.review_text if user_review else '' }}</textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">{% if user_review %}Update Review{% else %}Submit Review{% endif %}</button>
+                        {% if user_review %}
+                        <a href="/delete_review/{{ resource.id }}" onclick="return confirm('Delete your review?')" class="btn btn-secondary">Delete Review</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+
+            <h3 style="margin-bottom: 20px;">All Reviews ({{ reviews|length }})</h3>
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="review-item">
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <span class="reviewer-name">{{ review.reviewer_name }}</span>
+                            <span class="review-stars">{{ '★' * review.rating }}{{ '☆' * (5 - review.rating) }}</span>
+                        </div>
+                        <span class="review-date">{{ review.created_at }}</span>
+                    </div>
+                    {% if review.review_text %}
+                    <div class="review-text">{{ review.review_text }}</div>
+                    {% endif %}
+                    {% if review.updated_at != review.created_at %}
+                    <div style="color: #999; font-size: 12px; margin-top: 8px; font-style: italic;">
+                        Edited on {{ review.updated_at }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-reviews">
+                    <p>No reviews yet. Be the first to review this resource!</p>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Star rating interaction
+        const stars = document.querySelectorAll('.star-input');
+        const ratingValue = document.getElementById('ratingValue');
+        
+        // Set initial rating if editing
+        const initialRating = ratingValue.value;
+        if (initialRating) {
+            updateStars(parseInt(initialRating));
+        }
+        
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.dataset.rating;
+                ratingValue.value = rating;
+                updateStars(rating);
+            });
+            
+            star.addEventListener('mouseenter', function() {
+                const rating = this.dataset.rating;
+                updateStars(rating);
+            });
+        });
+        
+        document.getElementById('starRating').addEventListener('mouseleave', function() {
+            const currentRating = ratingValue.value || 0;
+            updateStars(currentRating);
+        });
+        
+        function updateStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
